@@ -1,6 +1,6 @@
 #include<stdio.h>
 int main()
 {
-    printf("test");
+    printf("Long Live Nelson Mandela");
     return 0;
 }
