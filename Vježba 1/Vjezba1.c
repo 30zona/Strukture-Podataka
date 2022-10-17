@@ -13,6 +13,12 @@
 #define FILE_DIDNT_OPEN_ERROR (-1) //-1 magicni broj mrale
 #define MAX_LINE (1024)
 #define MAX_FILE_NAME (256)
+#define MAX_NAME (747)
+
+typedef struct {
+ char ime[MAX_NAME];
+ int br_bodova;
+}_Student;
 
 int countStudentsFromFile(char* filename){ //šalješ pointer, ne datoteku
     FILE* fp=NULL;
@@ -32,14 +38,21 @@ int countStudentsFromFile(char* filename){ //šalješ pointer, ne datoteku
             count++;
         }
     }
-    fclose(fp);  //svaku datoteku je lijeo zatvoriti
+    fclose(fp);  //svaku datoteku je lijepo zatvoriti
     return count;
 }
 
+float relativan_br_bodova(int bodovi, int max_bodovi){
+    return bodovi/max_bodovi*100;
+}
+
 int main(void){
+    _Student *studenti;
+    //ovako bi da znamo kolko ih je ptr[]
     char filename[MAX_FILE_NAME]={0};
     printf("Unesi ime datoteke:\n");
     scanf(" %s", filename);
     printf("Broj studenata je %d", countStudentsFromFile(filename));
+    studenti=malloc(count*sizeof(_Student));
     return 0;
 }
