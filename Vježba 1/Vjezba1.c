@@ -11,26 +11,33 @@
 #include<string.h>
 
 #define FILE_DIDNT_OPEN_ERROR (-1) //-1 magicni broj mrale
+#define FILE_OPENED (1)
 #define MAX_LINE (1024)
 #define MAX_FILE_NAME (256)
 #define MAX_NAME (747)
 
 typedef struct {
  char ime[MAX_NAME];
+ char prezime[MAX_NAME];
  int br_bodova;
 }_Student;
 
-int countStudentsFromFile(char* filename){ //šalješ pointer, ne datoteku
+int fileCheck(char* filename) //provjera može li se uopće datoteka otvoriti
+{
     FILE* fp=NULL;
-    int count =0;
-    char buffer[MAX_LINE]={0};
-
-    //otvaranje datoteke, (i ne otvaranje i ne postojanje datoteke)
     fp=fopen(filename,"r");
     if (fp==NULL){ 
         printf("Datoteka %s se nije otvorila!", filename);
         return FILE_DIDNT_OPEN_ERROR;
     }
+    else return FILE_OPENED;
+}
+
+int countStudentsFromFile(char* filename){ //šalješ pointer, ne datoteku
+    FILE* fp=fopen(filename,"r");;
+    int count =0;
+    char buffer[MAX_LINE]={0};
+    
     //brojanje-dok nije kraj filea, uspoređujemo s \n, da ne brojimo prazne
     while (!feof(fp)){
         fgets(buffer,MAX_LINE,fp);
@@ -42,17 +49,45 @@ int countStudentsFromFile(char* filename){ //šalješ pointer, ne datoteku
     return count;
 }
 
+void saveStudentsFromFile(_Student* studenti, char* filename, int count)
+{
+    FILE*fp=fopen(filename,"r");
+    for(int i=0;i<count;i++)
+    {
+        fscanf(fp," %s %s %d", (studenti+i)->ime, (studenti+i)->prezime, &(studenti+i)->br_bodova);
+    }
+    fclose(fp);
+}
+
 float relativan_br_bodova(int bodovi, int max_bodovi){
-    return bodovi/max_bodovi*100;
+    return (float)bodovi/max_bodovi*100;
+}
+
+void ispisStudenata(_Student* studenti, int count)
+{
+    for (int i=0;i<count;i++)
+    {
+        printf("%s %s\t%d\t%.2f percent\n", (studenti+i)->ime, (studenti+i)->prezime, (studenti+i)->br_bodova, relativan_br_bodova((studenti+i)->br_bodova,50));
+    }
+    
 }
 
 int main(void){
-    _Student *studenti;
-    //ovako bi da znamo kolko ih je ptr[]
+    _Student* studenti=NULL;
     char filename[MAX_FILE_NAME]={0};
+    int count=0;
+    int check=0;
     printf("Unesi ime datoteke:\n");
     scanf(" %s", filename);
-    printf("Broj studenata je %d", countStudentsFromFile(filename));
-    studenti=malloc(count*sizeof(_Student));
+    check=fileCheck(filename);
+    if(check!=FILE_DIDNT_OPEN_ERROR)//ostatak programa pokrećemo samo ako je datoteka uspješno otvorena
+    {   
+        count=countStudentsFromFile(filename);
+        printf("Broj studenata je %d\n", count);
+        studenti=malloc(count*sizeof(_Student));
+        saveStudentsFromFile(studenti, filename, count);
+        ispisStudenata(studenti, count);
+        free(studenti);
+    }
     return 0;
 }
