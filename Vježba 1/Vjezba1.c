@@ -11,7 +11,7 @@
 #include<string.h>
 
 #define FILE_DIDNT_OPEN_ERROR (-1) //-1 magicni broj mrale
-#define FILE_OPENED (1)
+#define FILE_OPENED (0)
 #define MAX_LINE (1024)
 #define MAX_FILE_NAME (256)
 #define MAX_NAME (747)
