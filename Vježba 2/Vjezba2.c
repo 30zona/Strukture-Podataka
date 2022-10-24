@@ -23,12 +23,16 @@ struct osoba{
 };
 
 void unosNaPocetakListe(pozicija o);
+void unosNaKrajListe(pozicija o);
+void ispisListe(pozicija o);
 
 int main()
 {
     struct osoba o={0};
     o.next=NULL;
     unosNaPocetakListe(&o);
+    unosNaKrajListe(&o);
+    ispisListe(&o);
     return 0;
 }
 
@@ -48,5 +52,37 @@ void unosNaPocetakListe(pozicija o)
         scanf("%d",&q->godina_rodjenja);
         q->next=o->next;
         o->next=q;
+    }
+}
+void unosNaKrajListe(pozicija o)
+{
+    pozicija q=NULL;
+    q=(pozicija)malloc(sizeof(struct osoba));
+    if(q==NULL) //provjeravamo je li malloc uspio naci prostora u memoriji
+    printf("malloc error");
+    else //nastavljamo ako je malloc uspio
+    {
+        printf("Unesite ime\n");
+        scanf(" %s",q->ime);
+        printf("Unesite prezime\n");
+        scanf(" %s",q->prezime);
+        printf("Unesite godinu rodjenja\n");
+        scanf("%d",&q->godina_rodjenja);
+        q->next=NULL;
+        while(o->next!=NULL)
+        {
+            o=o->next;
+        }
+        o->next=q;
+    }
+}
+void ispisListe(pozicija o)
+{
+    o=o->next;//o samo pokazuje na prvi element, zato ga postavljamo na o->next, tj. prvi pravi element liste
+    while(o!=NULL)//idemo kroz listu sve dok ne dodemo do kraja
+    {
+        printf("\nIme: %s %s\n", o->ime, o->prezime);
+        printf("Godina rodjenja: %d\n", o->godina_rodjenja);
+        o=o->next;//idemo na sljedeci element liste
     }
 }
