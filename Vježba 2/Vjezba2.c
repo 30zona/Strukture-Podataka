@@ -79,7 +79,9 @@ void unosNaKrajListe(pozicija o)
 void ispisListe(pozicija o)
 {
     o=o->next;//o samo pokazuje na prvi element, zato ga postavljamo na o->next, tj. prvi pravi element liste
-    while(o!=NULL)//idemo kroz listu sve dok ne dodemo do kraja
+    if(o==NULL)
+    printf("Lista je prazna\n");
+    else while(o!=NULL)//idemo kroz listu sve dok ne dodemo do kraja
     {
         printf("\nIme: %s %s\n", o->ime, o->prezime);
         printf("Godina rodjenja: %d\n", o->godina_rodjenja);
