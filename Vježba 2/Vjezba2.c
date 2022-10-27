@@ -13,6 +13,7 @@
 #include<string.h>
 
 #define MAX_NAME (25)
+#define MALLOC_ERROR (-1)
 
 typedef struct osoba* pozicija;   
 
@@ -56,6 +57,11 @@ osoba* stvaranje()
 {
     osoba* o = NULL;                                   
     o = (osoba*)malloc(sizeof(osoba));              //alociramo meoriju
+    if (o==NULL){
+        printf("malloc error");
+
+    }
+
     o->next = NULL;                                 //njegov pointeric
     return o;
 }
@@ -78,8 +84,9 @@ void unosNaPocetakListe(pozicija head)
 { 
     pozicija q=stvaranje();
 
-    if(q==NULL) //provjeravamo je li malloc uspio naci prostora u memoriji
+    if(q==NULL){//provjeravamo je li malloc uspio naci prostora u memoriji
         printf("malloc error");
+        }
     else //nastavljamo ako je malloc uspio
     {
         printf("Unesite ime\n");
