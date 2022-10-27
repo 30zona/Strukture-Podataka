@@ -16,7 +16,7 @@
 
 typedef struct osoba* pozicija;   
 
-typedef struct osoba{             //ovdi ga definiramo
+typedef struct osoba{             //ovdi ga definiramo, struktura sa podacima i nextom
  char ime[MAX_NAME];
  char prezime[MAX_NAME];
  int godina_rodjenja;
@@ -28,13 +28,11 @@ void unosNaKrajListe(pozicija);
 void ispisListe(pozicija);
 pozicija pronalaziElement(char*, pozicija);
 pozicija onajIza(char*, pozicija);
-osoba* stvaranje(void);
+osoba* stvaranje(void);                 //ovo san doda funkcijica koja pravi onaj malloc i stvari koje se ponavljaju
 int brisanjeElementa(pozicija);
 
 int main()        //u mainu ih samo zovemo
 {
-    //struct osoba o={0};         //sve je dobro postavit na 0 il NULL
-    //o.next=NULL;
     pozicija head = NULL;
     head=stvaranje();
     unosNaPocetakListe(head);
@@ -56,15 +54,15 @@ return 1;
 
 osoba* stvaranje()
 {
-    osoba* o = NULL;
-    o = (osoba*)malloc(sizeof(osoba));
-    o->next = NULL;
+    osoba* o = NULL;                                   
+    o = (osoba*)malloc(sizeof(osoba));              //alociramo meoriju
+    o->next = NULL;                                 //njegov pointeric
     return o;
 }
 
 void ispisListe(pozicija o)
 {
-    if(o==NULL){
+    if(o==NULL){                                   //provjeramo postoji li itko uopce
     printf("Lista je prazna\n");}
 
     printf("Lista:\n");
@@ -89,27 +87,27 @@ void unosNaPocetakListe(pozicija head)
         printf("Unesite prezime\n");
         scanf(" %s",q->prezime);
         printf("Unesite godinu rodjenja\n");
-        scanf("%d",&q->godina_rodjenja);       // za godinu koja je int treba ovaj &
+        scanf("%d",&q->godina_rodjenja);       // za godinu koja je int treba &
         q->next=head->next;
         head->next=q;
     }
 }
 void unosNaKrajListe(pozicija head)
 {
-pozicija q=head;
-    while(q->next != NULL)
+pozicija q=head;                                       //stavljamo q na pocetak
+    while(q->next != NULL)                              //vrtimo dok ne stignemo na kraj
     {
-        q = q->next;
+        q = q->next;                                   
     }
-    unosNaPocetakListe(q);
+    unosNaPocetakListe(q);                          //i onda unesemo, kao da je pocetak, samo saljemo taj prevrceni q, a ne head
 }
 
 
 pozicija pronalaziElement(char* str, pozicija head)
 {
     pozicija s= head;
-    while(s!=NULL && strcmp(s->prezime, str)!=0){
-        s=s->next;   
+    while(s!=NULL && strcmp(s->prezime, str)!=0){               //uspoređuje uneseni sa svakim i gleda dolazimo li do kraja
+        s=s->next;                                              
     }
     if (s==NULL){
         printf("Osoba nije pronađena");
@@ -123,30 +121,30 @@ int brisanjeElementa(pozicija head)
     printf("Unesi prezime osobe za brisanje:");
     scanf("%s", str);
     
-    pozicija o = onajIza(str, head);
-    if(o == NULL)
+    pozicija o = onajIza(str, head);                                 //na neku poziciju stavimo onaj koji je iza (zapravo ispred) (nisan uspia brisat bas taj)
+    if(o == NULL)                                                   
     {
-        printf("Ne postoji!");
+        printf("Ne postoji!");  
         return 0;
     }
 
-    pozicija temp = o->next;                                        
+    pozicija temp = o->next;                                       
     o->next = temp->next;
     free(temp);
 
     return 1;
 }
 
-pozicija onajIza(char* str, pozicija head)
+pozicija onajIza(char* str, pozicija head)                     //ovo je zapravo onaj ISPRED
 {
-    pozicija s= head;
-    pozicija nova=head->next;
-    while(nova!=NULL && strcmp(nova->prezime, str)!=0){
-        s=nova;
-        nova=nova->next;
+    pozicija s= head;                          //imamo prvog
+    pozicija nova=head->next;                   //i onaj iza
+    while(nova!=NULL && strcmp(nova->prezime, str)!=0){   //gledamo kakav je taj iza
+        s=nova;                                           //ovde vrtimo oba napried, dok ne nađemo onaj koji nam treba  
+        nova=nova->next;                                 
     }
     if (s==NULL){
         printf("Osoba nije pronađena");
     }
-    return s;
+    return s;                                           //i na kraju vracamo onaj prethodni
 }
