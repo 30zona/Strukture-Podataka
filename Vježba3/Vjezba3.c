@@ -6,14 +6,25 @@
 // E. briše određeni element iz liste,
 // U zadatku se ne smiju koristiti globalne varijable
 
+// 3. Prethodnom zadatku dodati funkcije:
+// A. dinamički dodaje novi element iza određenog elementa,
+// B. dinamički dodaje novi element ispred određenog elementa,
+// C. sortira listu po prezimenima osoba,
+// D. upisuje listu u datoteku,
+// E. čita listu iz datoteke.
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<ctype.h>
 
 #define MAX_NAME (25)
 #define MALLOC_ERROR (-1)
+#define EMPTY_LIST (-1)
+#define PERSON_NOT_FOUND (-1)
+#define EXIT_PROGRAM (-1)
 
 typedef struct osoba* pozicija;   
 
@@ -24,42 +35,29 @@ typedef struct osoba{             //ovdi ga definiramo, struktura sa podacima i 
  pozicija next;
 }osoba;
 
-void unosNaPocetakListe(pozicija);
-void unosNaKrajListe(pozicija);
-void ispisListe(pozicija);
+int unosIza(pozicija);
+int unosNaPocetakListe(pozicija);
+int unosNaKrajListe(pozicija);
+int ispisListe(pozicija);
 pozicija pronalaziElement(char*, pozicija);
-pozicija onajIza(char*, pozicija);
-osoba* stvaranje(void);                 //ovo san doda funkcijica koja pravi onaj malloc i stvari koje se ponavljaju
-int brisanjeElementa(pozicija);
-void unosNakonOdredenog(char*,pozicija);
-void unosPrijeOdredenog(char* ,pozicija);
+pozicija onajIspred(char*, pozicija);
+osoba* stvaranje();                 //ovo san doda funkcijica koja pravi onaj malloc i stvari koje se ponavljaju
+int brisanjeElementa(char*, pozicija);
+int unosNakonOdredenog(char*, pozicija);
+int unosPrijeOdredenog(char*, pozicija);
+int userInterface(pozicija);
+int brisiSve(pozicija);
+int sortPoPrezimenu(pozicija);
 
 int main()        //u mainu ih samo zovemo
 {
     pozicija head = NULL;
     head=stvaranje();
-    unosNaPocetakListe(head);
-    unosNaPocetakListe(head);
-    unosNaKrajListe(head);
-    ispisListe(head->next);
-    char str[25];
-    printf("Unesite trazeno prezime:\n");
-    scanf(" %s",str);
-    pozicija x=NULL;
-    x=pronalaziElement(str, head->next);
-    if(x!=NULL){
-        printf("Trazena osoba:%s %s \n", x->ime,x->prezime);
-    }
-    brisanjeElementa(head);
-    printf("Nakon kojeg elementa zelite unijeti?\n");
-    scanf(" %s",str);
-    unosNakonOdredenog(str, head);
-    ispisListe(head->next);
-        printf("Prije kojeg elementa zelite unijeti?\n");
-        scanf(" %s",str);
-        unosPrijeOdredenog(str, head);
-        ispisListe(head->next);
-return 1;
+    int check=0;
+    while(check!=EXIT_PROGRAM) //sve dok ne unesemo da zelimo izaci iz programa(dok ne unesemo X)
+    check=userInterface(head);
+    brisiSve(head); //oslobadamo memoriju
+    return 0;
 }
 
 osoba* stvaranje()
@@ -67,18 +65,19 @@ osoba* stvaranje()
     osoba* o = NULL;                                   
     o = (osoba*)malloc(sizeof(osoba));              //alociramo meoriju
     if (o==NULL){
-        printf("malloc error");
-
+        printf("Greska u alokaciji memorije\n");
     }
-
+    else 
     o->next = NULL;                                 //njegov pointeric
     return o;
 }
 
-void ispisListe(pozicija o)
+int ispisListe(pozicija o)
 {
     if(o==NULL){                                   //provjeramo postoji li itko uopce
-    printf("Lista je prazna\n");}
+        printf("Lista je prazna\n");
+        return EMPTY_LIST;
+    }
 
     printf("Lista:\n");
     while(o!=NULL)//idemo kroz listu sve dok ne dodemo do kraja
@@ -87,71 +86,65 @@ void ispisListe(pozicija o)
         printf("Godina rodjenja: %d\n", o->godina_rodjenja);
         o=o->next;//idemo na sljedeci element liste
     }
+    return 0;
 }
 
-void unosNaPocetakListe(pozicija head)
+int unosIza(pozicija head) //ovo je bia kod funkcije unosNaPocetakListe, doda sam je jer smo pozivali funkciju unosNaPocetakListe u drugim funkcijama, ali nismo dodavali na pocetak liste nego negdi drugdi, pa je ovako intuitivnije, bolje ime
 { 
-    pozicija q=stvaranje();
-
-    if(q==NULL){//provjeravamo je li malloc uspio naci prostora u memoriji
-        printf("malloc error");
-        }
-    else //nastavljamo ako je malloc uspio
-    {
-        printf("Unesite ime\n");
-        scanf(" %s",q->ime);                   //sve stvari unosimo sa scanf, i spremamo ih na mjesto u strukturi q tipa pozicija
-        printf("Unesite prezime\n");
-        scanf(" %s",q->prezime);
-        printf("Unesite godinu rodjenja\n");
-        scanf("%d",&q->godina_rodjenja);       // za godinu koja je int treba &
-        q->next=head->next;
-        head->next=q;
-    }
-}
-void unosNaKrajListe(pozicija head)
-{
-pozicija q=head;                                       //stavljamo q na pocetak
-    while(q->next != NULL)                              //vrtimo dok ne stignemo na kraj
-    {
-        q = q->next;                                   
-    }
-    unosNaPocetakListe(q);                          //i onda unesemo, kao da je pocetak, samo saljemo taj prevrceni q, a ne head
+    pozicija q=NULL;
+    q=stvaranje();
+    printf("Unesite ime\n");
+    scanf(" %s",q->ime);                   //sve stvari unosimo sa scanf, i spremamo ih na mjesto u strukturi q tipa pozicija
+    printf("Unesite prezime\n");
+    scanf(" %s",q->prezime);
+    printf("Unesite godinu rodjenja\n");
+    scanf("%d",&q->godina_rodjenja);       // za godinu koja je int treba &
+    q->next=head->next;
+    head->next=q;
+    return 0;
 }
 
+int unosNaPocetakListe(pozicija head)
+{ 
+    unosIza(head);
+    return 0;
+}
+
+int unosNaKrajListe(pozicija head)
+{                                    //stavljamo q na pocetak
+    while(head->next != NULL)                              //vrtimo dok ne stignemo na kraj
+    {
+        head = head->next;                                   
+    }
+    unosIza(head);                          //i onda unesemo, kao da je pocetak, samo saljemo taj prevrceni q, a ne head
+    return 0;
+}
 
 pozicija pronalaziElement(char* str, pozicija head)
 {
-    pozicija s= head;
-    while(s!=NULL && strcmp(s->prezime, str)!=0){               //uspoređuje uneseni sa svakim i gleda dolazimo li do kraja
-        s=s->next;                                              
+    while(head!=NULL && strcmp(head->prezime, str)!=0){               //uspoređuje uneseni sa svakim i gleda dolazimo li do kraja
+        head=head->next;                                              
     }
-    if (s==NULL){
-        printf("Osoba nije pronađena");
+    if (head==NULL){
+        printf("Osoba nije pronađena\n");
     }
-    return s;
+    return head;
 }
 
-int brisanjeElementa(pozicija head)
+int brisanjeElementa(char* str, pozicija head)
 {
-    char str[20];
-    printf("Unesi prezime osobe za brisanje:");
-    scanf("%s", str);
-    
-    pozicija o = onajIza(str, head);                                 //na neku poziciju stavimo onaj koji je iza (zapravo ispred) (nisan uspia brisat bas taj)
-    if(o == NULL)                                                   
-    {
-        printf("Ne postoji!");  
-        return 0;
-    }
+    pozicija o = onajIspred(str, head);                                 //na neku poziciju stavimo onaj koji je ispred
+    if(o == NULL)
+    return PERSON_NOT_FOUND;
 
     pozicija temp = o->next;                                       
     o->next = temp->next;
     free(temp);
 
-    return 1;
+    return 0;
 }
 
-pozicija onajIza(char* str, pozicija head)                     //ovo je zapravo onaj ISPRED
+pozicija onajIspred(char* str, pozicija head)               
 {
     pozicija s= head;                          //imamo prvog
     pozicija nova=head->next;                   //i onaj iza
@@ -159,19 +152,145 @@ pozicija onajIza(char* str, pozicija head)                     //ovo je zapravo 
         s=nova;                                           //ovde vrtimo oba napried, dok ne nađemo onaj koji nam treba  
         nova=nova->next;                                 
     }
-    if (s==NULL){
-        printf("Osoba nije pronađena");
+    if (nova==NULL){ //ako smo dosli do kraja liste bez da smo nasli osobu, ona nije pronadena
+        printf("Osoba nije pronađena\n");
+        return NULL;
     }
-    return s;                                           //i na kraju vracamo onaj prethodni
-}
-void unosNakonOdredenog(char* str,pozicija head)
-{
-    head=pronalaziElement(str,head);
-    unosNaPocetakListe(head);
+    else return s;                                           //i na kraju vracamo onaj prethodni
 }
 
-void unosPrijeOdredenog(char* str,pozicija head)
+int unosNakonOdredenog(char* str,pozicija head)
 {
-    head=onajIza(str,head);
-    unosNaPocetakListe(head);
+    head=pronalaziElement(str,head);
+    if(head==NULL)
+    return EMPTY_LIST;
+    else unosIza(head);
+    return 0;
+}
+
+int unosPrijeOdredenog(char* str,pozicija head)
+{
+    head=onajIspred(str,head);
+    if(head==NULL)
+    return EMPTY_LIST;
+    else unosIza(head);
+    return 0;
+}
+
+int userInterface(pozicija head)
+{
+    printf("\nOdaberite\n");
+    printf("A-Unos na pocetak liste\n");
+    printf("B-Unos na kraj liste\n");
+    printf("C-Brisanje elementa liste\n");
+    printf("D-Unos nakon odredenog elementa liste\n");
+    printf("E-Unos prije odredenog elementa liste\n");
+    printf("F-Sortiranje liste po prezimenu\n");
+    printf("I-ispis liste\n");
+    printf("X-Izlaz iz programa\n");
+
+    char c={0}, str[MAX_NAME]={0}; 
+    scanf(" %c",&c); //korisnik unosi opciju koju zeli
+    c=toupper(c); //u slucaju da je korisnik unio malo slovo, postavljamo ga na veliko slovo tako da switch case moze preopznati
+    switch (c)
+    {
+        case 'A':
+            unosNaPocetakListe(head);
+            break;
+        case 'B':
+            unosNaKrajListe(head);
+            break;
+        case 'C':
+            if(head->next==NULL)
+            printf("Lista je prazna\n");
+            else 
+            {
+                printf("Koju osobu zelite izbrisati(upisite prezime)\n");
+                scanf(" %s",str);
+                brisanjeElementa(str,head);
+            }
+            break;  
+        case 'D':
+            if(head->next==NULL)
+            printf("Lista je prazna\n");
+            else
+            {
+                printf("Nakon koje osobe zelite unijeti?(upisite prezime)\n");
+                scanf(" %s",str);
+                unosNakonOdredenog(str,head);
+            }
+            break;  
+        case 'E':
+            if(head->next==NULL)
+            printf("Lista je prazna\n");
+            else
+            {
+                printf("Prije koje osobe zelite unijeti?(upisite prezime)\n");
+                scanf(" %s",str);
+                unosPrijeOdredenog(str,head);
+            }
+            break;
+        case 'F':
+            if(head->next==NULL)
+            printf("Lista je prazna\n");
+            else sortPoPrezimenu(head);
+            break;
+        case 'I':
+            ispisListe(head->next);
+            break;  
+        case 'X':
+            return EXIT_PROGRAM; 
+            break;
+        default: //ako se nije uneseno nijedno od ponudenih slova nego nesto drugo
+            printf("Unesite jedno od ponudenih slova\n");
+            break;
+    }
+    return 0;
+}
+
+int brisiSve(pozicija head)
+{
+    pozicija temp=NULL;
+    while(head->next!=NULL)
+    {
+        temp = head->next;                                       
+        head->next = temp->next;
+        free(temp);
+    }
+    free(head);
+    return 0;
+}
+
+int sortPoPrezimenu(pozicija i) //bubble sort
+{   
+    pozicija j=NULL, prev_j=NULL,temp=NULL,end=NULL;
+    while(i->next!=end)
+    {
+        prev_j=i;
+        j=i->next;
+        while(j->next!=end)
+        {
+            if(strcmp(j->prezime, j->next->prezime)>0) //usporedivanje prezimena
+            {
+                temp=j->next;
+                prev_j->next=temp;
+                j->next=temp->next;
+                temp->next=j;
+                j=temp;
+            }
+            else if(strcmp(j->prezime, j->next->prezime)==0) //ako su prezimena ista, usporedujemo imena
+                if(strcmp(j->ime, j->next->ime)>0) //usporedivanje imena
+                {
+                    temp=j->next;
+                    prev_j->next=temp;
+                    j->next=temp->next;
+                    temp->next=j;
+                    j=temp;
+                }
+            prev_j=j; //idemo na sljedecu poziciju u listi
+            j=j->next; //idemo na sljedecu poziciju u listi
+        }
+        end=j; //kraj sad vise nije zadnji element liste nego predzadnji, a u sljedecoj vrtnji petlje predpredzadnji itd
+    }
+    return 0;
 }
