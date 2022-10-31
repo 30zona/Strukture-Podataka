@@ -52,10 +52,8 @@ int unosPrijeOdredenog(char*, pozicija);
 int userInterface(pozicija);
 int brisiSve(pozicija);
 int sortPoPrezimenu(pozicija);
-int countStudentsFromFile(char*);
-int fileCheck(char*);
 int unosIzDatoteke(pozicija, char*);
-void ispisUDatoteku(pozicija, char*);
+int ispisUDatoteku(pozicija, char*);
 
 
 
@@ -66,7 +64,8 @@ int main()        //u mainu ih samo zovemo
     int check=0;
     while(check!=EXIT_PROGRAM) //sve dok ne unesemo da zelimo izaci iz programa(dok ne unesemo X)
     check=userInterface(head);
-    brisiSve(head); //oslobadamo memoriju
+    brisiSve(head);
+    free(head);
     return 0;
 }
 
@@ -143,7 +142,8 @@ pozicija pronalaziElement(char* str, pozicija head)
 
 int brisanjeElementa(char* str, pozicija head)
 {
-    pozicija o = onajIspred(str, head);                                 //na neku poziciju stavimo onaj koji je ispred
+    pozicija o = NULL;
+    o = onajIspred(str, head);                                 //na neku poziciju stavimo onaj koji je ispred
     if(o == NULL)
     return PERSON_NOT_FOUND;
 
@@ -156,8 +156,9 @@ int brisanjeElementa(char* str, pozicija head)
 
 pozicija onajIspred(char* str, pozicija head)               
 {
-    pozicija s= head;                          //imamo prvog
-    pozicija nova=head->next;                   //i onaj iza
+    pozicija s=NULL, nova=NULL;               
+    s= head; //imamo prvog
+    nova=head->next; //i onaj iza
     while(nova!=NULL && strcmp(nova->prezime, str)!=0){   //gledamo kakav je taj iza
         s=nova;                                           //ovde vrtimo oba napried, dok ne nađemo onaj koji nam treba  
         nova=nova->next;                                 
@@ -201,7 +202,7 @@ int userInterface(pozicija head)
     printf("I-ispis liste\n");
     printf("X-Izlaz iz programa\n");
 
-    char c={0}, str[MAX_NAME]={0}; 
+    char c={0}, str[MAX_NAME]={0}, filename[MAX_FILENAME]={0}; 
     scanf(" %c",&c); //korisnik unosi opciju koju zeli
     c=toupper(c); //u slucaju da je korisnik unio malo slovo, postavljamo ga na veliko slovo tako da switch case moze preopznati
     switch (c)
@@ -251,15 +252,19 @@ int userInterface(pozicija head)
             ispisListe(head->next);
             break;  
         case 'G':
-             char filename[MAX_FILENAME]={0};
             printf("Unesi ime datoteke:\n");
             scanf(" %s", filename);
             unosIzDatoteke(head, filename);
             break;
         case 'H':
-            printf("Unesi ime datoteke:\n");
-            scanf(" %s", filename);
-            ispisUDatoteku(head->next, filename);
+            if(head->next==NULL)
+            printf("Lista je prazna\n");
+            else
+            {   
+                printf("Unesi ime datoteke:\n");
+                scanf(" %s", filename);
+                ispisUDatoteku(head->next, filename);
+            }
             break;
         case 'X':
             return EXIT_PROGRAM; 
@@ -280,7 +285,6 @@ int brisiSve(pozicija head)
         head->next = temp->next;
         free(temp);
     }
-    //free(head);
     return 0;
 }
 
@@ -318,11 +322,9 @@ int sortPoPrezimenu(pozicija i) //bubble sort
     return 0;
 }
 
-
-
-
 int unosIzDatoteke(pozicija head, char* filename){
-    FILE*fp=fopen(filename,"r");
+    FILE*fp=NULL;
+    fp=fopen(filename,"r");
     if (fp==NULL){
         printf("Trazena datoteka ne postoji\n");
         return FILE_DIDNT_OPEN_ERROR;
@@ -348,16 +350,19 @@ int unosIzDatoteke(pozicija head, char* filename){
         head->next=o;
     }
     fclose(fp);
+    return 0;
 }
 
-void ispisUDatoteku(pozicija head,char* filename){
-    FILE* fp=fopen(filename,"w");
-    pozicija o=head;
+int ispisUDatoteku(pozicija head,char* filename){
+    FILE* fp=NULL;
+    fp=fopen(filename,"w");
+    pozicija o=NULL;
+    o=head;
     while(o!=NULL)
     {
         fprintf(fp,"%s %s %d\n", o->ime, o->prezime, o->godina_rodjenja);
        o=o->next;
     }
     fclose(fp);
-
+    return 0;
 }
