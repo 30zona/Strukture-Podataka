@@ -21,10 +21,14 @@
 #include<ctype.h>
 
 #define MAX_NAME (25)
+#define MAX_FILENAME (30)
+#define MAX_LINE (256)
 #define MALLOC_ERROR (-1)
 #define EMPTY_LIST (-1)
 #define PERSON_NOT_FOUND (-1)
 #define EXIT_PROGRAM (-1)
+#define FILE_DIDNT_OPEN_ERROR (-1)
+
 
 typedef struct osoba* pozicija;   
 
@@ -48,6 +52,12 @@ int unosPrijeOdredenog(char*, pozicija);
 int userInterface(pozicija);
 int brisiSve(pozicija);
 int sortPoPrezimenu(pozicija);
+int countStudentsFromFile(char*);
+int fileCheck(char*);
+int unosIzDatoteke(pozicija, char*);
+void ispisUDatoteku(pozicija, char*);
+
+
 
 int main()        //u mainu ih samo zovemo
 {
@@ -186,6 +196,8 @@ int userInterface(pozicija head)
     printf("D-Unos nakon odredenog elementa liste\n");
     printf("E-Unos prije odredenog elementa liste\n");
     printf("F-Sortiranje liste po prezimenu\n");
+    printf("G-Unesite datoteku u listu\n");
+    printf("H-Ispisite listu u datoteku\n");
     printf("I-ispis liste\n");
     printf("X-Izlaz iz programa\n");
 
@@ -238,6 +250,17 @@ int userInterface(pozicija head)
         case 'I':
             ispisListe(head->next);
             break;  
+        case 'G':
+             char filename[MAX_FILENAME]={0};
+            printf("Unesi ime datoteke:\n");
+            scanf(" %s", filename);
+            unosIzDatoteke(head, filename);
+            break;
+        case 'H':
+            printf("Unesi ime datoteke:\n");
+            scanf(" %s", filename);
+            ispisUDatoteku(head->next, filename);
+            break;
         case 'X':
             return EXIT_PROGRAM; 
             break;
@@ -257,7 +280,7 @@ int brisiSve(pozicija head)
         head->next = temp->next;
         free(temp);
     }
-    free(head);
+    //free(head);
     return 0;
 }
 
@@ -293,4 +316,48 @@ int sortPoPrezimenu(pozicija i) //bubble sort
         end=j; //kraj sad vise nije zadnji element liste nego predzadnji, a u sljedecoj vrtnji petlje predpredzadnji itd
     }
     return 0;
+}
+
+
+
+
+int unosIzDatoteke(pozicija head, char* filename){
+    FILE*fp=fopen(filename,"r");
+    if (fp==NULL){
+        printf("Trazena datoteka ne postoji\n");
+        return FILE_DIDNT_OPEN_ERROR;
+    }
+
+    int count=0;
+    char buffer[MAX_LINE]={0};
+    //brojanje-dok nije kraj filea, uspoređujemo s \n, da ne brojimo prazne
+    while (!feof(fp)){
+    fgets(buffer,MAX_LINE,fp);
+    if (strcmp("\n", buffer)!=0){
+        count++;
+        }
+    }
+    fclose(fp);
+    fp=fopen(filename,"r");
+    pozicija o=NULL;
+    for(int i=0;i<count;i++)
+    {
+        o=stvaranje();
+        fscanf(fp,"%s %s %d", o->ime, o->prezime, &o->godina_rodjenja);
+        o->next=head->next;
+        head->next=o;
+    }
+    fclose(fp);
+}
+
+void ispisUDatoteku(pozicija head,char* filename){
+    FILE* fp=fopen(filename,"w");
+    pozicija o=head;
+    while(o!=NULL)
+    {
+        fprintf(fp,"%s %s %d\n", o->ime, o->prezime, o->godina_rodjenja);
+       o=o->next;
+    }
+    fclose(fp);
+
 }
