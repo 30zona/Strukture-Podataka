@@ -2,6 +2,10 @@
 // čitaju iz datoteke.
 // Napomena: Eksponenti u datoteci nisu nužno sortirani.
 
+//reci pari da se dogovorite jel zovemo u mainu head->next, ili pisemo u programu head=head->next, poludicu ovako
+//trenutno spaja samo 2, al u mainu se moze samo napravit petlja u kojoj rezultantnu proglasavamo listom1, i onda sve zajedno opet spajamo
+//s nekom novom listom
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include<stdlib.h>
@@ -20,19 +24,36 @@ typedef struct polinom{
 
 polinom* stvaranje();
 int unosIza(pozicija, pozicija);
+int unosPrijeOdredenog(pozicija, pozicija);
 int sortiraniUnos(pozicija, pozicija);
 int sortiraniUnosIzDatoteke(char*, pozicija[]);
 int ispisPolinoma(pozicija);
+pozicija mergeliste(pozicija, pozicija);
 int brisiSve(pozicija);
+pozicija onajIspred(pozicija);
+int count(char*);
 
 int main()
 {
-    pozicija listaPolinoma[2]={0}; //zasad imamo 2 polinoma, mogli bi poslije dinamicki broj polinoma tako da koristimo pokazivac na poziciju
-    for(int i=0;i<2;i++)
+    int n=count("polinomi.txt");
+    
+    pozicija* listaPolinoma; //zasad imamo 2 polinoma, mogli bi poslije dinamicki broj polinoma tako da koristimo pokazivac na poziciju
+    listaPolinoma=malloc(n*sizeof(struct polinom));
+    for(int i=0;i<n;i++)
     listaPolinoma[i]=stvaranje();
     sortiraniUnosIzDatoteke("polinomi.txt",listaPolinoma);
-    for(int i=0;i<2;i++)
-    brisiSve(listaPolinoma[i]);
+    for(int i=0;i<n;i++){
+    printf("Polinom %i:\n", i+1);
+    ispisPolinoma(listaPolinoma[i]->next);
+    }
+    pozicija r=NULL;
+    for(int i=0;i<n-1;i++){
+    r=(mergeliste(listaPolinoma[i]->next, listaPolinoma[i+1]->next));
+    listaPolinoma[i+1]=r;
+    }
+    printf("\nRezultantni polinom:\n");
+    ispisPolinoma(r->next);
+    
     return 0;
 }
 
@@ -48,7 +69,7 @@ polinom* stvaranje()
     return p;
 }
 
-int unosIza(pozicija temp, pozicija p)
+int unosIza(pozicija temp, pozicija p)  //temp je taj sta se dodaje, p je iza koga
 {
     temp->next=p->next;                     //taj koji stvorimo pokazuje na ono na sto je p pokazivao (stvaramo izeđu p i prvog)
     p->next=temp;                           //a p pokazuje na njega
@@ -105,7 +126,7 @@ int ispisPolinoma(pozicija p)
         return EMPTY_LIST;
     }
 
-    printf("Polinom:\n");
+    //printf("Polinom:\n");
     while(p!=NULL)                              //idemo kroz listu sve dok ne dodemo do kraja
     {
         switch (p->koef)
@@ -146,4 +167,91 @@ int brisiSve(pozicija p)
     }
     free(p);                 //tako vrtimo sve dok p vise ne pokazuje na nista (nema vise clanova niza), i ond brisemo i p
     return 0;
+}
+
+pozicija onajIspred(pozicija p)               
+
+{
+    pozicija head=NULL;                                            //imamo prvog
+    pozicija nova=p->next;                                 //i onaj iza
+    while(head!=p){   //uspoređujemo tog iza sa traženim
+        p=nova;                                           //ovde vrtimo oba napried, dok ne nađemo onaj koji nam treba  
+        nova=nova->next;                                 
+    }
+    return p;                                           //i na kraju, kad se taj trazeni podudara, vracamo onaj prethodni
+}
+
+int count(char* filename){ //šalješ pointer, ne datoteku
+    FILE* fp=fopen(filename,"r");;
+    int count =0;
+    char buffer[MAX_LINE]={0};
+    
+    //brojanje-dok nije kraj filea, uspoređujemo s \n, da ne brojimo prazne
+    while (!feof(fp)){
+        fgets(buffer,MAX_LINE,fp);
+        if (strcmp("\n", buffer)!=0){
+            count++;
+        }
+    }
+    fclose(fp);  //svaku datoteku je lijepo zatvoriti
+    return count;
+}
+
+int unosPrijeOdredenog(pozicija head,pozicija p) //i ode ces moc maknit char
+{
+    head=onajIspred(head);  //sad radimo istu stvar kao za unosNakon, samo sto cemo vratit element prije i unjet iza njega
+    unosIza(head,p);
+    return 0;
+}
+
+
+pozicija mergeliste(pozicija l1, pozicija l2){
+    pozicija Rezultantna=stvaranje();
+
+     while(l1 != NULL && l2 != NULL)
+    {
+        pozicija temp=stvaranje();
+        if(l1->pot==l2->pot){
+        
+        temp->pot = l1->pot;
+        temp->koef = l1->koef+l2->koef;
+        sortiraniUnos(temp, Rezultantna);
+        l1 = l1->next;
+        l2 = l2->next;
+        }
+
+        else if(l1->pot>l2->pot){
+            temp->pot = l1->pot;
+            temp->koef = l1->koef;
+            sortiraniUnos(temp, Rezultantna);
+            l1 = l1->next;
+        }
+
+        else{
+        temp->pot = l2->pot;
+        temp->koef = l2->koef;
+        sortiraniUnos(temp, Rezultantna);
+        l2 = l2->next;
+        }
+
+
+    }
+
+    while(l1!=NULL){
+        pozicija temp=stvaranje();
+        temp->pot = l1->pot;
+        temp->koef = l1->koef;
+        sortiraniUnos(temp, Rezultantna);
+        l1=l1->next;
+    }
+
+        while(l2!=NULL){
+        pozicija temp=stvaranje();
+        temp->pot = l2->pot;
+        temp->koef = l2->koef;
+        sortiraniUnos(temp, Rezultantna);
+        l2=l2->next;
+    }
+
+    return Rezultantna;
 }
