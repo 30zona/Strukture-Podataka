@@ -14,6 +14,8 @@
 #define MAX_LINE (256)
 #define FILE_DIDNT_OPEN_ERROR (-1)
 #define EMPTY_LIST (-1)
+#define MALLOC_ERROR (-1)
+#define NOT_FOUND_ERROR (-1)
 
 typedef struct polinom* pozicija;   
 typedef struct polinom{   
@@ -32,13 +34,20 @@ pozicija mergeliste(pozicija, pozicija);
 int brisiSve(pozicija);
 pozicija onajIspred(pozicija);
 int count(char*);
+int srediPolinom(pozicija);
+int brisanjeSljedecegElementa(pozicija);
+pozicija umnozakPolinoma(pozicija, pozicija);
 
 int main()
 {
     int n=count("polinomi.txt");
     
-    pozicija* listaPolinoma; //zasad imamo 2 polinoma, mogli bi poslije dinamicki broj polinoma tako da koristimo pokazivac na poziciju
+    pozicija* listaPolinoma=NULL; 
     listaPolinoma=malloc(n*sizeof(struct polinom));
+    if (listaPolinoma==NULL){
+        printf("Greska u alokaciji memorije\n");
+        return MALLOC_ERROR;
+    }
     for(int i=0;i<n;i++)
     listaPolinoma[i]=stvaranje();
     sortiraniUnosIzDatoteke("polinomi.txt",listaPolinoma);
@@ -47,13 +56,38 @@ int main()
     ispisPolinoma(listaPolinoma[i]->next);
     }
     pozicija r=NULL;
-    for(int i=0;i<n-1;i++){
-    r=(mergeliste(listaPolinoma[i]->next, listaPolinoma[i+1]->next));
-    listaPolinoma[i+1]=r;
+    int check=0;
+    printf("Upisite 1 za zbroj polinoma, 2 za umnozak polinoma.");
+    scanf("%d",&check);
+    switch (check)
+    {
+    case 1:
+        for(int i=0;i<n-1;i++){
+        r=(mergeliste(listaPolinoma[i]->next, listaPolinoma[i+1]->next));
+        listaPolinoma[i+1]=r;
+        }
+        if(listaPolinoma[1]!=NULL)
+        {
+            printf("\nZbroj polinoma:\n");
+            ispisPolinoma(r->next);
+        }
+        break;
+    case 2:
+        for(int i=0;i<n-1;i++){
+        r=(umnozakPolinoma(listaPolinoma[i]->next, listaPolinoma[i+1]->next));
+        listaPolinoma[i+1]=r;
+        }
+        if(listaPolinoma[1]!=NULL)
+        {
+            printf("\nUmnozak polinoma:\n");
+            ispisPolinoma(r->next);
+        }
+        break;
+    default:
+        break;
     }
-    printf("\nRezultantni polinom:\n");
-    ispisPolinoma(r->next);
-    
+    for(int i=0;i<n;i++)
+    brisiSve(listaPolinoma[i]);
     return 0;
 }
 
@@ -100,21 +134,26 @@ int sortiraniUnosIzDatoteke(char* filename, pozicija listaPolinoma[])
     while(!feof(fp))
     {
         fgets(buffer,MAX_LINE,fp); //procita jedan red datoteke
-        pozicija temp=NULL;
-        temp=stvaranje();
-        check=sscanf(buffer,"%d %d %n",&temp->koef,&temp->pot,&p); //sscanf u varijablu check vraca broj elemenata koje je uspjesno skenira. %n uz to ubraja i spaceove, znaci u slucaju nase datoteke ce sada check biti 2, jer je skeniralo dva broja, a p ce biti 4 jer uz ta 2 broja racuna i 2 spacea
-        sortiraniUnos(temp,listaPolinoma[k]);
-        p2=p2+p; //p2 koristimo da se krecemo dalje kroz string
-        while(check==2) //prestajemo vrtiti kroz red kada dode do kraja, to jest kad sscanf vise ne moze nista skenirati
-        {    
+        if (strcmp("\r\n", buffer)!=0) //izvrsava se ako red nije prazan
+        {
+            pozicija temp=NULL;
             temp=stvaranje();
-            check=sscanf(buffer+p2,"%d %d %n",&temp->koef,&temp->pot,&p); //buffer+p2 - sada se vise ne gleda cijeli buffer(cijeli red datoteke), nego buffer BEZ onoga sta smo vec skenirali
-            if(check==2)
-            sortiraniUnos(temp,listaPolinoma[k]);
-            p2=p2+p;
+            check=sscanf(buffer,"%d %d %n",&temp->koef,&temp->pot,&p); //sscanf u varijablu check vraca broj elemenata koje je uspjesno skenira. %n uz to ubraja i spaceove, znaci u slucaju nase datoteke ce sada check biti 2, jer je skeniralo dva broja, a p ce biti 4 jer uz ta 2 broja racuna i 2 spacea
+            if(temp->koef!=0 || temp->pot!=0)
+                sortiraniUnos(temp,listaPolinoma[k]);
+            p2=p2+p; //p2 koristimo da se krecemo dalje kroz string
+            while(check==2) //prestajemo vrtiti kroz red kada dode do kraja, to jest kad sscanf vise ne moze nista skenirati
+            {    
+                temp=stvaranje();
+                check=sscanf(buffer+p2,"%d %d %n",&temp->koef,&temp->pot,&p); //buffer+p2 - sada se vise ne gleda cijeli buffer(cijeli red datoteke), nego buffer BEZ onoga sta smo vec skenirali
+                if(check==2)
+                if(temp->koef!=0 || temp->pot!=0)
+                    sortiraniUnos(temp,listaPolinoma[k]);
+                p2=p2+p;
+            }
+            p2=0;//postavljamo p2 na 0 jer idemo na sljedeci red
+            k++;//povecavamo k jer idemo na sljedeci red
         }
-        p2=0;//postavljamo p2 na 0 jer idemo na sljedeci red
-        k++;//povecavamo k jer idemo na sljedeci red
     }
     return 0;
 }
@@ -132,9 +171,13 @@ int ispisPolinoma(pozicija p)
         switch (p->koef)
         {
             case 1:
+                if(p->pot != 0)
                 printf("x");
                 break;
+            case 0:
+                break;
             default: 
+                if(p->pot != 0)
                 printf("%dx",p->koef);
                 break;
         }
@@ -142,12 +185,16 @@ int ispisPolinoma(pozicija p)
         {
             case 1:
                 break;
+            case 0:
+                if(p->koef != 0)
+                printf("%d",p->koef);
+                break;
             default: 
                 printf("^%d",p->pot);
                 break;
         }
         
-        if(p->next!=NULL)
+        if(p->next!=NULL && p->next->koef!=0)
         printf(" + ");
         
         p=p->next;                              //idemo na sljedeci element liste
@@ -189,7 +236,7 @@ int count(char* filename){ //šalješ pointer, ne datoteku
     //brojanje-dok nije kraj filea, uspoređujemo s \n, da ne brojimo prazne
     while (!feof(fp)){
         fgets(buffer,MAX_LINE,fp);
-        if (strcmp("\n", buffer)!=0){
+        if (strcmp("\r\n", buffer)!=0){
             count++;
         }
     }
@@ -252,6 +299,56 @@ pozicija mergeliste(pozicija l1, pozicija l2){
         sortiraniUnos(temp, Rezultantna);
         l2=l2->next;
     }
+    srediPolinom(Rezultantna);
+    return Rezultantna;
+}
 
+int srediPolinom(pozicija p) //salje se p u pozivu
+{
+    while(p->next->next!=NULL)
+    {
+        if(p->next->pot==p->next->next->pot)
+        {
+            p->next->koef=p->next->koef+p->next->next->koef;
+            if(p->next->koef==0)
+            {
+                brisanjeSljedecegElementa(p->next);                    
+                brisanjeSljedecegElementa(p);
+            }
+            else 
+            brisanjeSljedecegElementa(p->next);   
+        }
+        else p=p->next;
+    }
+    return 0;
+}
+
+int brisanjeSljedecegElementa(pozicija p) //poziva se element prije onoga kojeg zelimo brisat
+{
+    pozicija temp = p->next;                                       
+    p->next = temp->next;                               
+    free(temp);   
+    return 0;
+}
+
+pozicija umnozakPolinoma(pozicija l1, pozicija l2)
+{
+    pozicija Rezultantna=stvaranje();
+    pozicija temp2=NULL;
+    while(l1!=NULL)
+    {
+        temp2=l2;
+        while(l2!=NULL)
+        {   
+            pozicija temp=stvaranje();
+            temp->pot = (l1->pot)+(l2->pot);
+            temp->koef = (l1->koef)*(l2->koef);
+            sortiraniUnos(temp, Rezultantna);
+            l2=l2->next;
+        }
+        l2=temp2;
+        l1=l1->next;
+    }
+    srediPolinom(Rezultantna);
     return Rezultantna;
 }
