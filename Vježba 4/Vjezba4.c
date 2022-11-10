@@ -3,8 +3,6 @@
 // Napomena: Eksponenti u datoteci nisu nužno sortirani.
 
 //reci pari da se dogovorite jel zovemo u mainu head->next, ili pisemo u programu head=head->next, poludicu ovako
-//trenutno spaja samo 2, al u mainu se moze samo napravit petlja u kojoj rezultantnu proglasavamo listom1, i onda sve zajedno opet spajamo
-//s nekom novom listom
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
@@ -26,13 +24,11 @@ typedef struct polinom{
 
 polinom* stvaranje();
 int unosIza(pozicija, pozicija);
-int unosPrijeOdredenog(pozicija, pozicija);
 int sortiraniUnos(pozicija, pozicija);
 int sortiraniUnosIzDatoteke(char*, pozicija[]);
 int ispisPolinoma(pozicija);
 pozicija mergeliste(pozicija, pozicija);
 int brisiSve(pozicija);
-pozicija onajIspred(pozicija);
 int count(char*);
 int srediPolinom(pozicija);
 int brisanjeSljedecegElementa(pozicija);
@@ -40,20 +36,20 @@ pozicija umnozakPolinoma(pozicija, pozicija);
 
 int main()
 {
-    int n=count("polinomi.txt");
+    int n=count("polinomi.txt");            //prebrojimo polinome, da znamo koliko ćemo alocirati
     
     pozicija* listaPolinoma=NULL; 
-    listaPolinoma=malloc(n*sizeof(struct polinom));
+    listaPolinoma=malloc(n*sizeof(struct polinom));         //alociramo
     if (listaPolinoma==NULL){
         printf("Greska u alokaciji memorije\n");
         return MALLOC_ERROR;
     }
     for(int i=0;i<n;i++)
-    listaPolinoma[i]=stvaranje();
-    sortiraniUnosIzDatoteke("polinomi.txt",listaPolinoma);
+    listaPolinoma[i]=stvaranje();           //stvaramo polinome
+    sortiraniUnosIzDatoteke("polinomi.txt",listaPolinoma);  //unosimo ih iz datoteke
     for(int i=0;i<n;i++){
     printf("Polinom %i:\n", i+1);
-    ispisPolinoma(listaPolinoma[i]->next);
+    ispisPolinoma(listaPolinoma[i]->next);      //ispišemo polinome
     }
     pozicija r=NULL;
     int check=0;
@@ -122,7 +118,7 @@ int sortiraniUnos(pozicija temp, pozicija p)
 
 int sortiraniUnosIzDatoteke(char* filename, pozicija listaPolinoma[])
 {
-    FILE* fp=NULL;
+    FILE* fp=NULL;                                      //standardno otvaranje datoteke
     fp=fopen(filename,"r");
     if (fp == NULL)
 	{
@@ -171,17 +167,17 @@ int ispisPolinoma(pozicija p)
         switch (p->koef)
         {
             case 1:
-                if(p->pot != 0)
+                if(p->pot != 0)         //da ne printao jedinice, nego samo x
                 printf("x");
                 break;
-            case 0:
+            case 0:                     //ako je koeficijent 0, ne printaj nista
                 break;
-            default: 
-                if(p->pot != 0)
+            default:                    
+                if(p->pot != 0)         //inače printamo normalno
                 printf("%dx",p->koef);
                 break;
         }
-        switch (p->pot)
+        switch (p->pot) //kad dodjes na potenciju
         {
             case 1:
                 break;
@@ -194,7 +190,7 @@ int ispisPolinoma(pozicija p)
                 break;
         }
         
-        if(p->next!=NULL && p->next->koef!=0)
+        if(p->next!=NULL && p->next->koef!=0)    //ako postoji neki sljedeci printaj +
         printf(" + ");
         
         p=p->next;                              //idemo na sljedeci element liste
@@ -216,17 +212,7 @@ int brisiSve(pozicija p)
     return 0;
 }
 
-pozicija onajIspred(pozicija p)               
 
-{
-    pozicija head=NULL;                                            //imamo prvog
-    pozicija nova=p->next;                                 //i onaj iza
-    while(head!=p){   //uspoređujemo tog iza sa traženim
-        p=nova;                                           //ovde vrtimo oba napried, dok ne nađemo onaj koji nam treba  
-        nova=nova->next;                                 
-    }
-    return p;                                           //i na kraju, kad se taj trazeni podudara, vracamo onaj prethodni
-}
 
 int count(char* filename){ //šalješ pointer, ne datoteku
     FILE* fp=fopen(filename,"r");;
@@ -244,12 +230,6 @@ int count(char* filename){ //šalješ pointer, ne datoteku
     return count;
 }
 
-int unosPrijeOdredenog(pozicija head,pozicija p) //i ode ces moc maknit char
-{
-    head=onajIspred(head);  //sad radimo istu stvar kao za unosNakon, samo sto cemo vratit element prije i unjet iza njega
-    unosIza(head,p);
-    return 0;
-}
 
 
 pozicija mergeliste(pozicija l1, pozicija l2){
@@ -305,18 +285,18 @@ pozicija mergeliste(pozicija l1, pozicija l2){
 
 int srediPolinom(pozicija p) //salje se p u pozivu
 {
-    while(p->next->next!=NULL)
+    while(p->next->next!=NULL)          //do ne dođemo do predzadnjeg
     {
-        if(p->next->pot==p->next->next->pot)
+        if(p->next->pot==p->next->next->pot)        //uspoređujemo potenciju dva susjedna, gledamo jesu li isti
         {
-            p->next->koef=p->next->koef+p->next->next->koef;
-            if(p->next->koef==0)
+            p->next->koef=p->next->koef+p->next->next->koef;  //zbrajamo ih
+            if(p->next->koef==0)                              //ako su kad ih zbrojimo 0, brisemo oba
             {
                 brisanjeSljedecegElementa(p->next);                    
                 brisanjeSljedecegElementa(p);
             }
             else 
-            brisanjeSljedecegElementa(p->next);   
+            brisanjeSljedecegElementa(p->next);    //inace brisemo onaj drugi, jer smo onaj prvi pretvorili u zbroj
         }
         else p=p->next;
     }
@@ -335,19 +315,19 @@ pozicija umnozakPolinoma(pozicija l1, pozicija l2)
 {
     pozicija Rezultantna=stvaranje();
     pozicija temp2=NULL;
-    while(l1!=NULL)
+    while(l1!=NULL)                                     //vrtimo prvu listu
     {
         temp2=l2;
-        while(l2!=NULL)
+        while(l2!=NULL)                                 //vrtimo drugu (sljedecu) i svaki broj mnozimo s prvim clanom prve
         {   
             pozicija temp=stvaranje();
-            temp->pot = (l1->pot)+(l2->pot);
-            temp->koef = (l1->koef)*(l2->koef);
-            sortiraniUnos(temp, Rezultantna);
-            l2=l2->next;
+            temp->pot = (l1->pot)+(l2->pot);                //eksponente zbrojimo
+            temp->koef = (l1->koef)*(l2->koef);             //koeficijente pomnozimo
+            sortiraniUnos(temp, Rezultantna);               //unesemo u listu
+            l2=l2->next;                               //idemo na sljedeci element te druge liste
         }
         l2=temp2;
-        l1=l1->next;
+        l1=l1->next;                            //kad prođemo cijelu listu, mnozimo sa sljedecim iz one prve
     }
     srediPolinom(Rezultantna);
     return Rezultantna;
