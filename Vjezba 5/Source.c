@@ -1,4 +1,5 @@
-//zadaci za tebe Paro su na linijama 45 i 80
+// Napisati program koji iz datoteke čita postfiks izraz i zatim korištenjem stoga računa
+// rezultat. Stog je potrebno realizirati preko vezane liste.
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -12,90 +13,31 @@
 
 typedef struct lista* pozicija;
 typedef struct lista {
-	int el; //element(broj)
+	float el; //element(broj)
 	pozicija next;
 }lista;
 
 lista* stvaranje();
-int push(int, pozicija);
-int ispisListe(pozicija);
-int pull(pozicija);
+int push(float, pozicija);
+int brisi(pozicija);
+int brisiSve(pozicija);
+int pop(pozicija);
+int racunanje(char*, pozicija);
 
-int main() {
+int main() 
+{
 	lista* stog = NULL;
 	stog = stvaranje();
-	FILE* fp = NULL;
-	fp = fopen("filename.txt", "r");
-	if (fp == NULL)
-	{
-		printf("Datoteka nije uspjesno otvorena!\n");
-		return FILE_DIDNT_OPEN_ERROR;
-	}
-    char bufferr[MAX_LINE] = { 0 };
-    char* buffer = bufferr;
-    int offset;
-    int n;
-    int sum = 0;
-    int temp = 0;
-    char znak = 0;
-    int count = 0;
-
-    int num = 0;
-
-    while (count < 8) {                          //napravi funkciju koja prebroji brojeve u fileu(uvijek treba bit jedna manje operacija nego li je brojeva, tako da u while saljes (broj (brojeva)*2) -2                 ili ako to neznas, prebroji sve komponente (i brojeve i znakove) i salji taj broj -1
-
-
-        fgets(buffer, MAX_LINE, fp);
-        if (sscanf(buffer, " %d%n", &n, &offset) == 1)
-        {
-            printf("%d\n", n);
-            push(n, stog);
-            buffer += offset;
-
-        }
-        if (sscanf(buffer, " %d%n", &n, &offset) != 1) {
-            sscanf(buffer, " %c%n", &n, &offset);
-            switch (n)
-            {
-            case '+':
-                temp = ((stog->next->next->el) + (stog->next->el));
-                pull(stog);
-                push(temp, stog);
-                buffer += offset;
-                break;
-            case '*':
-                temp = ((stog->next->next->el) * (stog->next->el));
-                pull(stog);
-                push(temp, stog);
-                buffer += offset;
-
-                break;
-            case '-':
-                temp = ((stog->next->el) - (stog->next->next->el));
-                pull(stog);
-                push(temp, stog);
-                buffer += offset;
-                break;
-            case '/':
-                (float)temp = ((float)(stog->next->el) / (stog->next->next->el));   //ELEMENT JE INT VEC UNUTAR STRUKURE; PA TIH PAR STVARI PROMINI, I NEMOJ DA BUDE RUZNI ISPIS 5.0000 stavi 1 decimalu
-                pull(stog);
-                push(temp, stog);
-                buffer += offset;
-                break;
-            default:
-                printf("\nError-greska u fileu, sadrzi nedozvoljen znak\n");
-                goto jaje;
-            }
-        }
-        count++;
-    }
-    ispisListe(stog->next);
-    jaje:
+    racunanje("filename.txt",stog);
+    if(stog->next==NULL)
+    printf("Greska u ucitavanju iz datoteke\n");
+    else if(stog->next->next==NULL) //ako je na stogu samo jedan element, ispisujemo rezultat
+    printf("Rezultat:%.1f\n", stog->next->el);
+    else printf("Doslo je do greske u procesu racunanja, provjerite je li postfiks izraz pravilno napisan.\n");
+    brisiSve(stog);
 	return 0;
 
 }
-
-
 
 lista* stvaranje()
 {
@@ -109,28 +51,12 @@ lista* stvaranje()
 	return p;
 }
 
-int push(int n, pozicija p)            //temp je taj sta se dodaje, p je iza koga
+int push(float n, pozicija p)            //temp je taj sta se dodaje, p je iza koga
 {
     pozicija temp = stvaranje();
     temp->el = n;
     temp->next = p->next;                     //taj koji stvorimo pokazuje na ono na sto je p pokazivao (stvaramo ize?u p i prvog)
     p->next = temp;                           //a p pokazuje na njega
-    return 0;
-}
-
-int ispisListe(pozicija o)
-{
-    if (o == NULL) {                                   //provjeramo postoji li itko uopce
-        printf("Lista je prazna\n");
-        return -1;
-    }
-
-    printf("Rezultat:\n");
-    while (o != NULL)                              //idemo kroz listu sve dok ne dodemo do kraja
-    {
-        printf("%d\n", o->el);
-        o = o->next;                              //idemo na sljedeci element liste
-    }
     return 0;
 }
 
@@ -143,7 +69,80 @@ int brisi(pozicija p)
         return 0;
 }
 
-int pull(pozicija p) {   //najnepotrebnija funkcija ikad, al ajde
+int brisiSve(pozicija p)
+{        
+    while(p->next!=NULL)
+    {
+        brisi(p);
+    }
+    free(p);                 
+    return 0;
+}
+
+int pop(pozicija p) {   
     brisi(p);
     brisi(p);
+}
+
+int racunanje(char* filename, pozicija stog)
+{
+    FILE* fp = NULL;
+	fp = fopen(filename, "r");
+	if (fp == NULL)
+	{
+		printf("Datoteka nije uspjesno otvorena!\n");
+		return FILE_DIDNT_OPEN_ERROR;
+	}
+    char bufferr[MAX_LINE] = { 0 };
+    char* buffer = bufferr;
+    int offset=0, check=1;
+    float n=0, temp=0;
+    char znak = 0;
+    
+    fgets(buffer, MAX_LINE, fp);
+    while(check==1) //dok ne dodemo na kraj
+    {   
+        if (check=sscanf(buffer, " %f%n", &n, &offset) == 1)
+        {
+            push(n, stog);
+            buffer += offset;
+        }
+        if (sscanf(buffer, " %f%n", &n, &offset) != 1) {
+            check=sscanf(buffer, " %c%n", &znak, &offset);
+            if(check!=1)
+            break;
+            switch (znak)
+            {
+            case '+':
+                temp = ((stog->next->next->el) + (stog->next->el));
+                pop(stog);
+                push(temp, stog);
+                buffer += offset;
+                break;
+            case '*':
+                temp = ((stog->next->next->el) * (stog->next->el));
+                pop(stog);
+                push(temp, stog);
+                buffer += offset;
+                break;
+            case '-':
+                temp = ((stog->next->next->el) - (stog->next->el));
+                pop(stog);
+                push(temp, stog);
+                buffer += offset;
+                break;
+            case '/':
+                temp = (stog->next->next->el) / (stog->next->el);
+                pop(stog);
+                push(temp, stog);
+                buffer += offset;
+                break;
+            default:
+                printf("Error-greska u fileu, sadrzi nedozvoljen znak\n");
+                check=0;
+                break;
+            }
+        }
+    }
+    return 0;
 }
