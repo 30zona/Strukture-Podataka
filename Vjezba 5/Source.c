@@ -116,7 +116,7 @@ int racunanje(char* filename, pozicija stog)
             case '+':                                                  
                 temp = ((stog->next->next->el) + (stog->next->el));   //ako je +, stvorimo privremeni koji je zbroj ta 2
                 pop(stog);              //izbrisemo ta 2
-                push(temp, stog);     //na stog stavimo taj novi, za sve druge funkcije je ista baza
+                push(temp, stog);     //na stog stavimo taj novi
                 buffer += offset;
                 break;
             case '*':
@@ -126,13 +126,13 @@ int racunanje(char* filename, pozicija stog)
                 buffer += offset;
                 break;
             case '-':
-                temp = ((stog->next->el) - (stog->next->next->el));    
+                temp = ((stog->next->next->el) - (stog->next->el));
                 pop(stog);
                 push(temp, stog);
                 buffer += offset;
                 break;
             case '/':
-                temp = (stog->next->el) / (stog->next->next->el);
+                temp = (stog->next->next->el) / (stog->next->el);
                 pop(stog);
                 push(temp, stog);
                 buffer += offset;
