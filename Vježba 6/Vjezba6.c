@@ -13,8 +13,8 @@
 
 typedef struct cvor* pozicija;   
 typedef struct cvor{   
- char name[MAX_LINE];
- pozicija firstChild;
+char name[MAX_LINE];   //ime direktorija
+ pozicija firstChild;      //dete
  pozicija nextSibling;
 }cvor;
 
@@ -27,7 +27,7 @@ int main()
 {
     pozicija root=NULL;
     root=stvaranje();
-    strcpy(root->name,"C:");
+    strcpy(root->name,"C:");  //ne mozemo stavit za string=string, nego triba ovo
     userInterface(root);
     return 0;
 }
@@ -48,8 +48,8 @@ cvor* stvaranje()
 pozicija insert(pozicija p, pozicija q)//za md //sortirani unos(po abecedi) //q dodajemo na mjesto p 
 {
     if(NULL==p)
-        return q;
-    if(strcmp(p->name,q->name)>0)
+        return q;      //ako nema nuceg to misto je ono prvo
+    if(strcmp(p->name,q->name)>0) //ako ima vrtimo dok ne dodjemo iza
     {
         q->nextSibling=p;
         return q;
@@ -72,15 +72,35 @@ int userInterface(pozicija p)
     char command[MAX_LINE]={0}; //prva upisana rijec
     char name[MAX_LINE]={0}; //druga upisana rijec
     //ovde treba neka petlja koja vrti dok korisnik ne izade iz programa, takoder treba napravit provjere tipa sta ako nije korisnik nije unia nista, sta ako je unia prvu rijec a ne drugu, sta ako uneseno ime filea ne postoji
-        scanf(" %s %s",command,name);
-        if(strcmp(command,"md")==0)
-        {   
-            pozicija new=NULL;
-            new=stvaranje();
-            strcpy(new->name,name);
-            p->firstChild=insert(p->firstChild,new);
+        scanf(" %s %s", command, name);
+        while (command != "exit") {
+        if (strcmp(command, "md") == 0)
+        {
+            pozicija new = NULL;
+            new = stvaranje();
+            strcpy(new->name, name);
+            p->firstChild = insert(p->firstChild, new);
         }
-        else if(strcmp(command,"cd")==0) 
-            p=find(p->firstChild,name);
+        else if (strcmp(command, "cd") == 0) {
+            p = find(p->firstChild, name);
+        }
+        else if (strcmp(command, "cd ..") == 0) {
+               //ovo je ono kad moras nac tatu a nemas pointer 
+        }
+        else if (strcmp(command, "dir") == 0) {
+            p = p->firstChild;
+            while (p->nextSibling != NULL) {
+                printf("%s \n", p->name);
+                p = p->nextSibling;
+            }
+        }
+        else {
+            printf("Kriva naredba\n");
+        }
+        printf("sad si u %s\n", p->name);
+
+        }
+        
+       
     return 0;
 }
