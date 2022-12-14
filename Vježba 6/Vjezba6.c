@@ -21,6 +21,7 @@ char name[MAX_LINE];   //ime direktorija
 cvor* stvaranje();
 pozicija insert(pozicija, pozicija);
 pozicija find(pozicija, char*);
+int ispisDjece(pozicija);
 int userInterface(pozicija);
 
 int main()
@@ -60,47 +61,64 @@ pozicija insert(pozicija p, pozicija q)//za md //sortirani unos(po abecedi) //q 
 
 pozicija find(pozicija p, char* name)//za cd 
 {
-    while(strcmp(p->name,name)<0) //posto je pri unosu vec sortirano po abecedi, ne trebamo ic skroz do kraja, nego samo proc sve elemente koji su abecedno prije onog kojeg trazimo
-        p=p->nextSibling;
+    if(NULL==p) //ako uopce nema djece
+        return NULL;
+    while(strcmp(p->name,name)<0 && p->nextSibling!=NULL) 
+    p=p->nextSibling;
     if(strcmp(p->name,name)==0)
         return p;
     else return NULL;
 }
 
+int ispisDjece(pozicija p)
+{
+    p = p->firstChild;
+    while (NULL!=p){
+        printf("%s \n", p->name);
+        p = p->nextSibling;
+    }
+    return 0;
+}
+
 int userInterface(pozicija p)
 {
+    char input[MAX_LINE]={0}; //sve upisano
     char command[MAX_LINE]={0}; //prva upisana rijec
     char name[MAX_LINE]={0}; //druga upisana rijec
-    //ovde treba neka petlja koja vrti dok korisnik ne izade iz programa, takoder treba napravit provjere tipa sta ako nije korisnik nije unia nista, sta ako je unia prvu rijec a ne drugu, sta ako uneseno ime filea ne postoji
-        scanf(" %s %s", command, name);
-        while (command != "exit") {
-        if (strcmp(command, "md") == 0)
+    int check=1;
+    while (check==1) {
+        input[0]='\0'; //postavljamo ove vrijednosti tako da ne pamti od proslog unosa
+        command[0]='\0'; 
+        name[0]='\0'; 
+        printf("%s ", p->name); //ispisuje di smo trenutno
+        fgets(input, MAX_LINE, stdin); //korisnik upise nesto
+        sscanf(input," %s %s", command, name); //to sto je upisano se dijeli na dvi rijeci
+        if (strcmp(command, "md") == 0 && name[0]!='\0')
         {
             pozicija new = NULL;
             new = stvaranje();
             strcpy(new->name, name);
             p->firstChild = insert(p->firstChild, new);
         }
-        else if (strcmp(command, "cd") == 0) {
-            p = find(p->firstChild, name);
+        else if (strcmp(command, "cd") == 0 && name[0]!='\0' && strcmp(name,"..") != 0) {
+            if(NULL!=find(p->firstChild, name)) //postoji li uopce to sta je korisnik upisa
+                p = find(p->firstChild, name);
+            else printf("No such file or directory\n");
         }
-        else if (strcmp(command, "cd ..") == 0) {
+        else if (strcmp(command, "cd") == 0 && strcmp(name,"..") == 0) {
                //ovo je ono kad moras nac tatu a nemas pointer 
         }
-        else if (strcmp(command, "dir") == 0) {
-            p = p->firstChild;
-            while (p->nextSibling != NULL) {
-                printf("%s \n", p->name);
-                p = p->nextSibling;
-            }
+        else if (strcmp(command, "dir") == 0 && name[0]=='\0') {
+            ispisDjece(p);
+        }
+        else if(strcmp(command, "exit") == 0 && name[0]=='\0')
+        {
+            check=0;
+            //sad tu jos treba obrisat sve elemente koje smo dodali u stablo
         }
         else {
             printf("Kriva naredba\n");
         }
-        printf("sad si u %s\n", p->name);
-
-        }
-        
-       
+    }
     return 0;
 }
