@@ -40,7 +40,8 @@ int main()
 {
     pozicija root = NULL;
     root = stvaranje();
-    stog head = stvaranje_stog();
+    stog head = NULL;
+    head = stvaranje_stog();
     strcpy(root->name, "C:");  //ne mozemo stavit za string=string, nego triba ovo
     userInterface(root,head,root);
     return 0;
@@ -89,7 +90,6 @@ int userInterface(pozicija p, stog head, pozicija root)
             clear(root);
             brisi_stog(head);
             check = 0;
-            //sad tu jos treba obrisat sve elemente koje smo dodali u stablo
         }
         else {
             printf("Kriva naredba\n");
@@ -106,8 +106,10 @@ cvor* stvaranje()
         printf("Greska u alokaciji memorije\n");
     }
     else
+    {
         c->firstChild = NULL;
-    c->nextSibling = NULL;
+        c->nextSibling = NULL;
+    }
     return c;
 }
 
@@ -182,13 +184,17 @@ int ispisDjece(pozicija p)
 }
 
 stog stvaranje_stog() {
-    stog s =(stog)malloc(sizeof(stog_cvor));
+    stog s = NULL;
+    s =(stog)malloc(sizeof(stog_cvor));
     if (s == NULL) {
-        printf("Malloc error");
-        return NULL;
+        printf("Malloc error\n");
     }
-    s->element = NULL;
-    s->next = NULL;
+    else
+    {
+        s->element = NULL;
+        s->next = NULL;
+    }
+    return s;
 }
 int push(pozicija p, stog head) {
     stog s = stvaranje_stog();
