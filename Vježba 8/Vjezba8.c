@@ -9,8 +9,6 @@
 #include<string.h>
 #include<ctype.h>
 
-#define MAX_LINE (256)
-
 typedef struct cvor* pozicija;
 typedef struct cvor {
     int br;   
