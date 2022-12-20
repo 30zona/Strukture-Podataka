@@ -22,10 +22,11 @@ pozicija find(pozicija, int);
 pozicija delete(pozicija, int);
 pozicija findMax(pozicija);
 pozicija findMin(pozicija);
-int printInorder(pozicija);
-int printPreorder(pozicija);
-int printPostorder(pozicija);
-int printLevelOrder(pozicija);
+pozicija printInorder(pozicija);
+pozicija printPreorder(pozicija);
+pozicija printPostorder(pozicija);
+pozicija printLevelOrder(pozicija);
+int clear(pozicija);
 int userInterface(pozicija, pozicija);
 
 int main()
@@ -116,6 +117,33 @@ pozicija findMin(pozicija p)
     return p;
 }
 
+pozicija printInorder(pozicija p)
+{
+    if(p==NULL)
+        return NULL;
+    printInorder(p->left);
+    printf("%d ",p->br);
+    printInorder(p->right);
+    return p;
+}
+
+int clear(pozicija p)
+{
+    if (p != NULL)
+    {
+        clear(p->left);
+        clear(p->right);
+        free(p);
+    }
+    return 0;
+
+    // 2.Nacin:
+    // while(p->left!=NULL || p->right!=NULL)
+    //     delete(p,p->br);
+    // free(p);
+    // return 0;
+}
+
 int userInterface(pozicija p, pozicija root)
 {
     int check=1;
@@ -176,6 +204,7 @@ int userInterface(pozicija p, pozicija root)
                 p=root; //vracamo pokazivac na root
                 break;  
             case 'D':
+                p=printInorder(p);
                 break;  
             case 'E':
                 break;
@@ -185,7 +214,7 @@ int userInterface(pozicija p, pozicija root)
                 break;
             case 'X':
                 check=0; 
-                //treba i brisanje stabla tu
+                clear(root);
                 break;
             default: //ako se nije uneseno nijedno od ponudenih slova nego nesto drugo
                 printf("Unesite jedno od ponudenih slova\n");
