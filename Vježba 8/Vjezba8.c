@@ -226,8 +226,8 @@ pozicija printPostorder(pozicija p)
 {
     if (p == NULL)
         return NULL;
-    printPostorder(p->left);
-    printPostorder(p->right);
+    p->left = printPostorder(p->left);
+    p->right=printPostorder(p->right);
     printf("%d ", p->br);
     return p;
 }
@@ -237,8 +237,8 @@ pozicija printPreorder(pozicija p)
     if (p == NULL)
         return NULL;
     printf("%d ", p->br);
-    printPreorder(p->left);
-    printPreorder(p->right);
+    p->left=printPreorder(p->left);
+    p->right=printPreorder(p->right);
     return p;
 }
 
