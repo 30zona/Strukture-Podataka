@@ -16,7 +16,11 @@ typedef struct cvor {
     pozicija right;
 }cvor;
 
+static int brojac = 0;
+
 cvor* stvaranje();
+int Level(pozicija);
+int PrintCurrentLevel(pozicija p, int level);
 pozicija insert(pozicija, pozicija);
 pozicija find(pozicija, int);
 pozicija delete(pozicija, int);
@@ -25,7 +29,7 @@ pozicija findMin(pozicija);
 pozicija printInorder(pozicija);
 pozicija printPreorder(pozicija);
 pozicija printPostorder(pozicija);
-pozicija printLevelOrder(pozicija);
+pozicija printLevelorder(pozicija);
 int clear(pozicija);
 int userInterface(pozicija, pozicija);
 
@@ -52,7 +56,7 @@ int userInterface(pozicija p, pozicija root)
         printf("F-Ispis elemenata - postorder\n");
         printf("G-Ispis elemenata - level order\n");
         printf("X-Izlaz iz programa\n");
-
+        
         char c = { 0 };
         scanf(" %c", &c); //korisnik unosi opciju koju zeli
         c = toupper(c); //u slucaju da je korisnik unio malo slovo, postavljamo ga na veliko slovo tako da switch case moze preopznati
@@ -62,21 +66,26 @@ int userInterface(pozicija p, pozicija root)
             printf("Unesite broj koji zelite unijeti\n");
             if (scanf("%d", &n) == 1)//ako je korisnik zapravo unio broj
             {
-                if (!p->br) // ako root nema broj
+                if (brojac==0) {// ako je to prvi broj kojeg unosimo
                     p->br = n;
+                    brojac++;   //dizemo brojac, vise nije prvi broj
+                }
                 else {
                     pozicija q = NULL;
                     q = stvaranje();
                     q->br = n;
                     p = insert(p, q);
+                    brojac++;
                 }
             }
             else printf("Unesite broj\n");
             break;
         case 'B':
             printf("Unesite broj koji zelite izbrisati\n");
-            if (scanf("%d", &n) == 1)//ako je korisnik zapravo unio broj
+            if (scanf("%d", &n) == 1) {//ako je korisnik zapravo unio broj
                 p = delete(p, n);
+                //brojac--;
+            }
             else printf("Unesite broj\n");
             break;
         case 'C':
@@ -106,6 +115,7 @@ int userInterface(pozicija p, pozicija root)
             p = printPostorder(p);
             break;
         case 'G':
+            p = printLevelorder(p);
             break;
         case 'X':
             check = 0;
@@ -182,6 +192,7 @@ pozicija delete(pozicija p, int n)
             return NULL;
         }
     }
+    brojac--;
     return p;
 }
 
@@ -204,21 +215,19 @@ pozicija printInorder(pozicija p)
     if (p == NULL) {                                //nije greška u rekurziji
         return NULL;
     }
-    printInorder(p->left);
+    p->left=printInorder(p->left);
     printf("%d ", p->br);
-    printInorder(p->right);
+    p->right=printInorder(p->right);
 
     return p;
 }
 
 pozicija printPostorder(pozicija p)
 {
-    //if (p == NULL)
-    //    return NULL;
-    //printPostorder(p->left);
-    //printPostorder(p->right);
-    //printf("%d ", p->br);
-    //return p;
+    if (p == NULL)
+        return NULL;
+    printPostorder(p->left);
+    printPostorder(p->right);
     printf("%d ", p->br);
     return p;
 }
@@ -231,6 +240,43 @@ pozicija printPreorder(pozicija p)
     printPreorder(p->left);
     printPreorder(p->right);
     return p;
+}
+
+pozicija printLevelorder(pozicija p)
+{
+    int h = Level(p);
+    for (int i = 1; i <= h; i++)
+        PrintCurrentLevel(p, i);
+    return p;
+}
+
+int PrintCurrentLevel(pozicija p, int level)
+{
+    if (p == NULL)
+        return 0;
+    if (level == 1)
+        printf("%d ", p->br);
+    else if (level > 1) {
+        PrintCurrentLevel(p->left, level - 1);
+        PrintCurrentLevel(p->right, level - 1);
+    }
+    return 0;
+}
+
+int Level(pozicija p)
+{
+    int right = 0, left = 0;
+    if (p == NULL)
+        return 0;
+    else {
+        left = Level(p->left);
+        right = Level(p->right);
+
+        if (left > right)
+            return (left + 1);
+        else
+            return (right + 1);
+    }
 }
 
 int clear(pozicija p)
