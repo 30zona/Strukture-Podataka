@@ -40,7 +40,6 @@ int clearStablo(pozStablo);
 int clearLista(pozLista);
 int printLista(pozStablo root);
 int RandomBroj(int min, int max);
-int printListaFile(FILE* out_file, pozStablo root);
 void writeToFile(char* ime, pozLista root);
 
 int main()
@@ -70,23 +69,20 @@ int main()
     pozLista head = NULL;
     head = stvaranjeLista();
     root = inorderLista(root, head); //elemente stabla stavljamo u listu
-    int temp = root->br;
-    root->br -= temp;
-    printf("Prije inordera\n");
+    printf("Prije replace\n");
     printLista(root);
-    FILE* out_file1 = fopen("fajlprije.txt", "w"); //ispis u datoteku prije
-    writeToFile("stari.txt",head);
+    writeToFile("stari.txt",head->next);
 
     //mijenjamo stablo iz slike 1 tako da bude kao na slici 2:
-    temp = root->br;
+    int temp = root->br;
     root->br = replace(root);
     root->br -= temp;
-    printf("Poslije inordera\n");
+    printf("Poslije replace\n");
     printLista(root);
     pozLista head2 = NULL;
     head2 = stvaranjeLista();
     root = inorderLista(root, head2); //elemente stabla stavljamo u listu
-    writeToFile("novi.txt",head2);
+    writeToFile("novi.txt",head2->next);
     clearStablo(root);
     clearLista(head);
     clearLista(head2);
@@ -190,8 +186,8 @@ int printLista(pozStablo root)
     }
 
     if (root != NULL) {
-        printf("%d \n", root->br);
         printLista(root->left);
+        printf("%d \n", root->br);
         printLista(root->right);
     }
 
@@ -207,7 +203,7 @@ int RandomBroj(int min, int max)
 
 }
 
-void writeToFile(char* ime,pozLista root)
+void writeToFile(char* ime,pozLista head)
 {
     FILE* fptr;
     fptr = fopen(ime, "w");
@@ -219,10 +215,10 @@ void writeToFile(char* ime,pozLista root)
 
     else
     {
-        while (root != NULL)
+        while (head != NULL)
         {
-            fprintf(fptr, "%d\n", root->br);
-            root = root->next;
+            fprintf(fptr, "%d\n", head->br);
+            head = head->next;
         }
     }
 
