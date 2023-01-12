@@ -39,7 +39,6 @@ int replace(pozStablo);
 pozStablo inorderLista(pozStablo, pozLista);
 int clearStablo(pozStablo);
 int clearLista(pozLista);
-int printLista(pozStablo root);
 int RandomBroj(int min, int max);
 int writeToFile(char* ime, pozLista root);
 
@@ -170,22 +169,6 @@ int clearLista(pozLista head)
     free(head);
     return 0;
 }
-
-int printLista(pozStablo root)  //ništa ovo, al nek tu stoji
-{
-    if (root == NULL) {
-        return 1;
-    }
-
-    if (root != NULL) {
-        printLista(root->left);
-        printf("%d \n", root->br);
-        printLista(root->right);
-    }
-
-    return 0;
-}
-
 
 int RandomBroj(int min, int max)
 {
