@@ -12,6 +12,7 @@
 // dijela zadatka.
 
 #define _CRT_SECURE_NO_WARNINGS
+#define FILE_ERROR (-1)
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -40,18 +41,14 @@ int clearStablo(pozStablo);
 int clearLista(pozLista);
 int printLista(pozStablo root);
 int RandomBroj(int min, int max);
-void writeToFile(char* ime, pozLista root);
+int writeToFile(char* ime, pozLista root);
 
 int main()
 {
-    srand(time(NULL)); 
+    srand(time(NULL));
     int niz[10] = { 2,5,7,8,11,1,4,2,3,7 };
-    //FILE* out_file = fopen("fajlprije.txt", "w");
-    //FILE* drugi_file = fopen("fajl2.txt", "w");
-    //fprintf(out_file,"ispis random brojeva\n");
-    for (int i = 0;i < 10;i++) {
+    for (int i = 0;i < 10;i++) { 
         niz[i] = RandomBroj(10, 90);
-    //    fprintf(out_file, "%d\n", niz[i]);
     }
     pozStablo root = NULL;
     root = stvaranjeStablo();
@@ -69,20 +66,15 @@ int main()
     pozLista head = NULL;
     head = stvaranjeLista();
     root = inorderLista(root, head); //elemente stabla stavljamo u listu
-    printf("Prije replace\n");
-    printLista(root);
-    writeToFile("stari.txt",head->next);
-
+    writeToFile("stari.txt", head->next);
     //mijenjamo stablo iz slike 1 tako da bude kao na slici 2:
     int temp = root->br;
     root->br = replace(root);
     root->br -= temp;
-    printf("Poslije replace\n");
-    printLista(root);
     pozLista head2 = NULL;
     head2 = stvaranjeLista();
     root = inorderLista(root, head2); //elemente stabla stavljamo u listu
-    writeToFile("novi.txt",head2->next);
+    writeToFile("novi.txt", head2->next);
     clearStablo(root);
     clearLista(head);
     clearLista(head2);
@@ -179,7 +171,7 @@ int clearLista(pozLista head)
     return 0;
 }
 
-int printLista(pozStablo root)
+int printLista(pozStablo root)  //ništa ovo, al nek tu stoji
 {
     if (root == NULL) {
         return 1;
@@ -203,7 +195,7 @@ int RandomBroj(int min, int max)
 
 }
 
-void writeToFile(char* ime,pozLista head)
+int writeToFile(char* ime, pozLista head)
 {
     FILE* fptr;
     fptr = fopen(ime, "w");
@@ -211,6 +203,7 @@ void writeToFile(char* ime,pozLista head)
     if (fptr == NULL)
     {
         printf("Error\n");
+        return FILE_ERROR;
     }
 
     else
@@ -220,6 +213,7 @@ void writeToFile(char* ime,pozLista head)
             fprintf(fptr, "%d\n", head->br);
             head = head->next;
         }
+        return 0;
     }
 
     fclose(fptr);
