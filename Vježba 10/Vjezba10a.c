@@ -51,7 +51,8 @@ int main() {
     pozLista head = NULL;
     head = stvaranjeLista();
     sortiraniUnosIzDatoteke("drzave.txt", head);
-    ispisListe(head);
+    ispisListe(head->next);
+    clearLista(head);
 	return 0;
 }
 
@@ -219,6 +220,7 @@ int clearLista(pozLista head)
     {
         temp = head->next;
         head->next = temp->next;
+        clearStablo(temp->root);
         free(temp);
     }
     free(head);
