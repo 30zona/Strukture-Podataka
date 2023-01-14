@@ -47,7 +47,7 @@ int cityCompare(pozStablo, pozStablo);
 int ispisSvihDrzava(pozLista);
 int ispisSvihDrzavaIGradova(pozLista);
 int ispisSvihGradovaDrzave(pozLista);
-int ispisVecihGradovaOdN(pozStablo, int);
+pozStablo ispisVecihGradovaOdN(pozStablo, int);
 pozStablo ispisInorder(pozStablo);
 pozLista pronadiDrzavu(char*, pozLista);
 int countryNameFormat(char*);
@@ -231,15 +231,18 @@ int ispisSvihGradovaDrzave(pozLista p)
     return 0;
 }
 
-int ispisVecihGradovaOdN(pozStablo p, int n)
+pozStablo ispisVecihGradovaOdN(pozStablo p, int n)
 {
-    if(p != NULL){
-        ispisVecihGradovaOdN(p->right, n);
-        if(p->stanovnistvo > n)
-        printf("\t%s - %d\n", p->grad, p->stanovnistvo);
-        ispisVecihGradovaOdN(p->left, n);
+    if(p == NULL){
+        return NULL;
     }
-    return 0;
+    p->right=ispisVecihGradovaOdN(p->right, n);
+    if(p->stanovnistvo > n)
+    {
+        printf("\t%s - %d\n", p->grad, p->stanovnistvo);
+        p->left=ispisVecihGradovaOdN(p->left, n);
+    }
+    return p;
 }
 
 pozStablo ispisInorder(pozStablo p)
@@ -318,7 +321,7 @@ int userInterface(pozLista p)
                     int n;
                     printf("Unesite broj stanovnika\n");
                     scanf("%d", &n);
-                    ispisVecihGradovaOdN(d->root,n);
+                    d->root=ispisVecihGradovaOdN(d->root,n);
                 }
                 break;
             case 'X':
