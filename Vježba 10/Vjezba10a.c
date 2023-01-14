@@ -19,6 +19,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<ctype.h>
 
 typedef struct stablo* pozStablo;
 typedef struct stablo {
@@ -43,7 +44,14 @@ int sortiraniUnosIzDatoteke(char*, pozLista);
 int unosGradovaIzDatoteke(char*, pozLista);
 pozStablo insert(pozStablo, pozStablo);
 int cityCompare(pozStablo, pozStablo);
-int ispisListe(pozLista);
+int ispisSvihDrzava(pozLista);
+int ispisSvihDrzavaIGradova(pozLista);
+int ispisSvihGradovaDrzave(pozLista);
+int ispisVecihGradovaOdN(pozStablo, int);
+pozStablo ispisInorder(pozStablo);
+pozLista pronadiDrzavu(char*, pozLista);
+int countryNameFormat(char*);
+int userInterface(pozLista);
 int clearStablo(pozStablo);
 int clearLista(pozLista);
 
@@ -51,7 +59,7 @@ int main() {
     pozLista head = NULL;
     head = stvaranjeLista();
     sortiraniUnosIzDatoteke("drzave.txt", head);
-    ispisListe(head->next);
+    userInterface(head);
     clearLista(head);
 	return 0;
 }
@@ -186,18 +194,140 @@ int cityCompare(pozStablo p, pozStablo q)
     return rezultat;
 }
 
-int ispisListe(pozLista l)
+int ispisSvihDrzava(pozLista p)
 {
-    if (l == NULL) {                                  
-        printf("Lista je prazna\n");
+    if (p == NULL) {                                  
+        printf("Prazno\n");
         return EMPTY_LIST;
     }
 
-    printf("Lista:\n");
-    while (l != NULL)
+    while (p != NULL)
     {
-        printf("%s\n", l->drzava);
-        l = l->next;
+        printf("%s\n", p->drzava);
+        p = p->next;
+    }
+    return 0;
+}
+
+int ispisSvihDrzavaIGradova(pozLista p)
+{
+    if (p == NULL) {                                  
+        printf("Prazno\n");
+        return EMPTY_LIST;
+    }
+
+    while (p != NULL)
+    {
+        printf("%s\n", p->drzava);
+        p->root=ispisInorder(p->root);
+        p = p->next;
+    }
+    return 0;
+}
+
+int ispisSvihGradovaDrzave(pozLista p)
+{
+    p->root=ispisInorder(p->root);
+    return 0;
+}
+
+int ispisVecihGradovaOdN(pozStablo p, int n)
+{
+    if(p != NULL){
+        ispisVecihGradovaOdN(p->right, n);
+        if(p->stanovnistvo > n)
+        printf("\t%s - %d\n", p->grad, p->stanovnistvo);
+        ispisVecihGradovaOdN(p->left, n);
+    }
+    return 0;
+}
+
+pozStablo ispisInorder(pozStablo p)
+{
+    if (p == NULL) {                                
+        return NULL;
+    }
+    p->left=ispisInorder(p->left);
+    printf("\t%s - %d\n", p->grad, p->stanovnistvo);
+    p->right=ispisInorder(p->right);
+
+    return p;
+}
+
+pozLista pronadiDrzavu(char* name, pozLista p)
+{
+    while(p!=NULL && strcmp(p->drzava,name)!=0)
+    {
+        p=p->next;
+    }
+    return p;
+}
+
+int countryNameFormat(char* s)
+{
+    for(int i=0;i<strlen(s);i++)
+        if(i==0 || s[i-1]==' ')
+            s[i]=toupper(s[i]);
+        else s[i]=tolower(s[i]);
+    return 0;
+}
+
+int userInterface(pozLista p)
+{
+    int check = 1;
+    while(check==1)
+    {
+        printf("\nOdaberite\n");
+        printf("A-Ispis svih drzava\n");
+        printf("B-Ispis svih drzava i gradova\n");
+        printf("C-Ispis svih gradova jedne drzave\n");
+        printf("D-Ispis svih gradova jedne drzave iznad odredenog broja stanovnika\n");
+        printf("X-Izlaz iz programa\n");
+        
+        char c = { 0 };
+        scanf(" %c", &c); //korisnik unosi opciju koju zeli
+        c = toupper(c); //u slucaju da je korisnik unio malo slovo, postavljamo ga na veliko slovo tako da switch case moze preopznati
+        char drzava[MAX_LINE] = { 0 }; //ime drzave koju unese korisnik
+        pozLista d=NULL; //pointer na tu drzavu
+        switch (c)
+        {
+            case 'A':
+                ispisSvihDrzava(p->next);
+                break;
+            case 'B':
+                ispisSvihDrzavaIGradova(p->next);
+                break;
+            case 'C':
+                printf("Unesite ime drzave\n");
+                scanf(" %[^\n]", drzava);
+                countryNameFormat(drzava);//tako da korisnik moze unijeti i samo mala slova npr
+                d=pronadiDrzavu(drzava, p);
+                if(d==NULL)
+                    printf("Drzava nije pronadena\n");
+                else ispisSvihGradovaDrzave(d);
+                break;
+            case 'D':
+                printf("Unesite ime drzave\n");
+                scanf(" %[^\n]", drzava);
+                countryNameFormat(drzava);//tako da korisnik moze unijeti i samo mala slova npr
+                d=pronadiDrzavu(drzava, p);
+                if(d==NULL)
+                    printf("Drzava nije pronadena\n");
+                else
+                {
+                    int n;
+                    printf("Unesite broj stanovnika\n");
+                    scanf("%d", &n);
+                    ispisVecihGradovaOdN(d->root,n);
+                }
+                break;
+            case 'X':
+                check = 0;
+                break;
+            default: //ako se nije uneseno nijedno od ponudenih slova nego nesto drugo
+                printf("Unesite jedno od ponudenih slova\n");
+                break;
+        }
     }
     return 0;
 }
