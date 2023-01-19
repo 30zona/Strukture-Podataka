@@ -60,7 +60,7 @@ int main()
 	printf("Unesi minimalan broj stanovnika:\n");
 	scanf("%d", &broj);
 	vecigradovi(newroot->ListP, broj);
-	//userInterface();
+	//;
 }
 
 pozStablo unosDrzava(pozStablo P, char* filename)
@@ -76,9 +76,9 @@ pozStablo unosDrzava(pozStablo P, char* filename)
 
 	while (!feof(fp))
 	{
-		fscanf(fp, "%s %s", drzava, imefilea);
+		fscanf(fp, "%s %s", drzava, imefilea);  
 		pozStablo Q = NULL;
-		Q = (pozStablo)malloc(sizeof(stablo));
+		Q = (pozStablo)malloc(sizeof(stablo)); //ovdi tvaramo stablo
 		if (Q == NULL)
 		{
 			printf("Greska!\n");
@@ -87,7 +87,7 @@ pozStablo unosDrzava(pozStablo P, char* filename)
 		strcpy(Q->drzava, drzava);
 		Q->left = NULL;
 		Q->right = NULL;
-		Q->ListP = unosGradovaFile(imefilea);
+		Q->ListP = unosGradovaFile(imefilea); // po imenu filea dodajemo gradove
 		P = sortiraniUnosStablo(P, Q);
 		
 	}
@@ -115,7 +115,7 @@ int CountryCompare(pozStablo P, pozStablo Q)
 	return result;
 }
 
-int PrintInOrder(pozStablo P)
+int PrintInOrder(pozStablo P) //za ispis samo drzava
 {
 	if (P == NULL)
 		return 0;
@@ -127,11 +127,11 @@ int PrintInOrder(pozStablo P)
 
 pozLista unosGradovaFile(char* filename)
 {
-	struct lista head;
+	struct lista head; //napravimo head
 	head.Next = NULL;
 	FILE* fp = NULL;
 	char name[MAX_LINE] = { 0 };
-	int number = 0;
+	int z = 0;
 	fp = fopen(filename, "r");
 	if (fp == NULL)
 	{
@@ -140,9 +140,9 @@ pozLista unosGradovaFile(char* filename)
 	}
 	while (!feof(fp))
 	{
-		fscanf(fp, "%s %d", name, &number);
+		fscanf(fp, "%s %d", name, &z);
 		pozLista Q = NULL;
-		Q = stvaranje(name, number);
+		Q = stvaranje(name, z);
 		sortiraniUnosLista(&head, Q);
 		
 	}
@@ -171,12 +171,12 @@ int sortiraniUnosLista(pozLista P, pozLista Q)
 	if (head == NULL) {
 		return 0;
 	}
-	int result = 0;
-	result = CityCompare(P, Q);
-	while (head->Next != NULL && result > 0)
+	int br = 0;
+	br = CityCompare(P, Q);
+	while (head->Next != NULL && br > 0)  //vrtimo dok je veci
 		head = head->Next;
 
-	unosIza(head, Q);
+	unosIza(head, Q); //i onda ga savimo
 	return 0;
 }
 
@@ -239,66 +239,3 @@ int vecigradovi(pozLista P, int x)
 	}
 	return 0;
 }
-
-//int userInterface()
-//{
-//	int check = 1;
-//	while (check == 1)
-//	{
-//		printf("\nOdaberite\n");
-//		printf("A-Ispis svih drzava\n");
-//		printf("B-Ispis svih gradova jedne drzave\n");
-//		printf("C-Ispis svih gradova jedne drzave iznad odredenog broja stanovnika\n");
-//		printf("X-Izlaz iz programa\n");
-//
-//		pozStablo root = NULL;
-//		pozStablo newroot = NULL;
-//		struct lista head;
-//		head.Next = 0;
-//		int broj = 0;
-//		char filename[MAX_LINE] = { 0 }, drzava[MAX_LINE] = { 0 };
-//		char c = { 0 };
-//		scanf(" %c", &c); //korisnik unosi opciju koju zeli
-//		c = toupper(c); //u slucaju da je korisnik unio malo slovo, postavljamo ga na veliko slovo tako da switch case moze preopznati
-//		char drzava[500] = { 0 }; //ime drzave koju unese korisnik
-//		pozLista d = NULL; //pointer na tu drzavu
-//		switch (c)
-//		{
-//		case 'A':
-//			//ispisSvihDrzava;
-//			root = unosDrzava(root, "drzave.txt");
-//			PrintInOrder(root);
-//
-//			break;
-//		case 'B':
-//			//ispisSvihDrzavaIGradova(p->Next);
-//
-//			break;
-//		case 'C': //ispis do granice
-//			pozStablo root = NULL;
-//	pozStablo newroot = NULL;
-//	struct lista head;
-//	head.Next = 0;
-//	int broj = 0;
-//	char filename[MAX_LINE] = { 0 }, drzava[MAX_LINE] = { 0 };
-//			printf("\nInsert name of a country > ");
-//			scanf("%s", drzava);
-//			newroot = traziDrzavu(root, drzava);
-//			printf("%s", newroot->drzava);
-//			printf("\nInsert minimal stanovnistvo > ");
-//			scanf("%d", &broj);
-//			vecigradovi(newroot->ListP, broj);
-//
-//			break;
-//		case 'D':
-//			break;
-//		case 'X':
-//			check = 0;
-//			break;
-//		default: //ako se nije uneseno nijedno od ponudenih slova nego nesto drugo
-//			printf("Unesite jedno od ponudenih slova\n");
-//			break;
-//		}
-//	}
-//	return 0;
-//}
